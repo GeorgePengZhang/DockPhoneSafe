@@ -12,7 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.auratech.dockphonesafe.R;
-import com.auratech.dockphonesafe.utils.BaseListBean;
+import com.auratech.dockphonesafe.bean.BaseListBean;
 import com.auratech.dockphonesafe.utils.Utils.IChildViewOnClick;
 
 public class ContactListAdapter extends BaseAdapter implements OnClickListener {

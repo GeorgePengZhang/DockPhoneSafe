@@ -1,7 +1,8 @@
-package com.auratech.dockphonesafe.utils;
+package com.auratech.dockphonesafe.bean;
 
 import java.io.Serializable;
 
+import com.auratech.dockphonesafe.utils.TimeUtils;
 import com.litesuits.orm.db.annotation.Column;
 import com.litesuits.orm.db.annotation.PrimaryKey;
 import com.litesuits.orm.db.annotation.Table;

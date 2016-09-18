@@ -1,4 +1,4 @@
-package com.auratech.dockphonesafe.utils;
+package com.auratech.dockphonesafe.bean;
 
 import com.litesuits.orm.db.annotation.Column;
 import com.litesuits.orm.db.annotation.Conflict;

@@ -19,16 +19,16 @@ import android.widget.Toast;
 
 import com.auratech.dockphonesafe.adapter.ContactListAdapter;
 import com.auratech.dockphonesafe.adapter.ListAdapter;
+import com.auratech.dockphonesafe.bean.BaseListBean;
+import com.auratech.dockphonesafe.bean.BlackListBean;
+import com.auratech.dockphonesafe.bean.WhiteListBean;
 import com.auratech.dockphonesafe.service.Dock;
 import com.auratech.dockphonesafe.service.DockService;
 import com.auratech.dockphonesafe.service.DockService.OnDockInfoListener;
-import com.auratech.dockphonesafe.utils.BaseListBean;
-import com.auratech.dockphonesafe.utils.BlackListBean;
 import com.auratech.dockphonesafe.utils.DbUtils;
 import com.auratech.dockphonesafe.utils.DockCmdUtils;
 import com.auratech.dockphonesafe.utils.Utils;
 import com.auratech.dockphonesafe.utils.Utils.IChildViewOnClick;
-import com.auratech.dockphonesafe.utils.WhiteListBean;
 import com.litesuits.orm.LiteOrm;
 import com.litesuits.orm.db.assit.QueryBuilder;
 
@@ -99,8 +99,7 @@ public class WhiteListActivity extends Activity implements OnClickListener, IChi
 			showCutomDialog();
 			break;
 		case R.id.id_sync:
-			Dock.syncwhitelist();
-			DockService.setSyncAllList(false);
+			DockCmdUtils.syncWhiteList();
 			break;
 
 		default:

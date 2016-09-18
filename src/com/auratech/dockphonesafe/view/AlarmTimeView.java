@@ -15,7 +15,7 @@ import android.text.format.Time;
 import android.util.AttributeSet;
 import android.view.View;
 
-import com.auratech.dockphonesafe.utils.TimeBean;
+import com.auratech.dockphonesafe.bean.TimeBean;
 import com.auratech.dockphonesafe.utils.TimeUtils;
 
 public class AlarmTimeView extends View {

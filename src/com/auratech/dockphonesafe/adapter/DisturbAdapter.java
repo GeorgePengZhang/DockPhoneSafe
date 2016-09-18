@@ -12,7 +12,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.auratech.dockphonesafe.R;
-import com.auratech.dockphonesafe.utils.TimeBean;
+import com.auratech.dockphonesafe.bean.TimeBean;
 import com.auratech.dockphonesafe.utils.Utils.IChildViewOnClick;
 
 public class DisturbAdapter extends BaseAdapter implements OnClickListener {

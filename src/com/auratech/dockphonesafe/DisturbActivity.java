@@ -20,9 +20,9 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 
 import com.auratech.dockphonesafe.adapter.DisturbAdapter;
+import com.auratech.dockphonesafe.bean.TimeBean;
 import com.auratech.dockphonesafe.utils.AlarmUtils;
 import com.auratech.dockphonesafe.utils.DbUtils;
-import com.auratech.dockphonesafe.utils.TimeBean;
 import com.auratech.dockphonesafe.utils.TimeUtils;
 import com.auratech.dockphonesafe.utils.Utils;
 import com.auratech.dockphonesafe.utils.Utils.IChildViewOnClick;

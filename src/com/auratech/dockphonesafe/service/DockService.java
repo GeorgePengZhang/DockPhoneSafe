@@ -11,11 +11,11 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.auratech.dockphonesafe.utils.BlackListBean;
+import com.auratech.dockphonesafe.bean.BlackListBean;
+import com.auratech.dockphonesafe.bean.WhiteListBean;
 import com.auratech.dockphonesafe.utils.DbUtils;
 import com.auratech.dockphonesafe.utils.DockCmdUtils;
 import com.auratech.dockphonesafe.utils.Utils;
-import com.auratech.dockphonesafe.utils.WhiteListBean;
 import com.litesuits.orm.db.assit.QueryBuilder;
 
 public class DockService extends Service {
@@ -87,10 +87,14 @@ public class DockService extends Service {
 					DockCmdUtils.closedisturb();
 				}
 				
-				setSyncAllList(true);
-				Dock.syncwhitelist();
+				DockCmdUtils.syncAllList();
 			} else if (!existNode && existNode != existUSBNode){
 				Toast.makeText(DockService.this, "平板取出底座", Toast.LENGTH_LONG).show();
+				if (syncflag) {
+					Toast.makeText(DockService.this, "名单同步失败!", Toast.LENGTH_LONG).show();
+					Intent intent = new Intent(ACTION_HIDE_DIALOG);
+					DockService.this.sendBroadcast(intent);
+				}
 				//同步结束
 				syncflag = false;
 			}
@@ -132,14 +136,26 @@ public class DockService extends Service {
 		public void onUpdated(String result);
 	}
 	
+	/**
+	 * 设置是否全部同步还是同步黑名单或者白名单
+	 * @param syncAllList
+	 */
 	public static void setSyncAllList(boolean syncAllList) {
 		isSyncAllList = syncAllList;
 	}
 	
+	/**
+	 * 设置免打扰的状态
+	 * @param disturb
+	 */
 	public static void setDisturb(boolean disturb) {
 		isDisturb = disturb;
 	}
 	
+	/**
+	 * 同步名单
+	 * @param info
+	 */
 	private void syncList(String info) {
 		String[] syncResult = Dock.getPhoneSyncResult(info);
 		if (syncResult == null) {
@@ -158,7 +174,9 @@ public class DockService extends Service {
 		}
 	}
 	
-	//同步白名单
+	/** 同步白名单
+	 * @param id 
+	 */
 	private void syncWhiteList(String id) {
 		Log.d("TAG", "syncWhiteList:"+id+",size:"+size+",position:"+position+",phoneId:"+phoneId);
 		
@@ -192,15 +210,19 @@ public class DockService extends Service {
 						Dock.syncblacklist();
 						isSyncAllList = false;
 					}
+					Toast.makeText(DockService.this, "白名单同步成功!", Toast.LENGTH_LONG).show();
 				}
 			} else {
 				//同步失败
 				syncflag = false;
+				Toast.makeText(DockService.this, "白名单同步失败!", Toast.LENGTH_LONG).show();
 			}
 		}
 	}
 	
-	//同步黑名单
+	/** 同步黑名单
+	 * @param id
+	 */
 	private void syncBlackList(String id) {
 		if ("0000".equals(id)) {
 			QueryBuilder<BlackListBean> qb = new QueryBuilder<BlackListBean>(BlackListBean.class)
@@ -224,10 +246,12 @@ public class DockService extends Service {
 				} else {
 					//同步结束
 					syncflag = false;
+					Toast.makeText(DockService.this, "黑名单同步成功!", Toast.LENGTH_LONG).show();
 				}
 			} else {
 				//同步失败
 				syncflag = false;
+				Toast.makeText(DockService.this, "黑名单同步失败!", Toast.LENGTH_LONG).show();
 			}
 		}
 	}

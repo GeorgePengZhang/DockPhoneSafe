@@ -19,6 +19,9 @@ import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.View;
 
+import com.auratech.dockphonesafe.bean.BaseListBean;
+import com.auratech.dockphonesafe.bean.TimeBean;
+
 public class Utils {
 
 	public static final boolean DEBUG = true;
