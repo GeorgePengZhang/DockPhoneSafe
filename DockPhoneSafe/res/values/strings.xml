@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">DockPhoneSafe</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="manual">MANUAL</string>
+    <string name="name">name</string>
+    <string name="phone">phone</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="add_to_the_black_list">ADD TO THE BLACK LIST</string>
+    <string name="add_to_the_white_list">ADD TO THE WHITE LIST</string>
+    <string name="delete_from_the_black_list">DELETE FROM THE BLACK LIST</string>
+    <string name="delete_from_the_white_list">DELETE FROM THE WHITE LIST</string>
+    <string name="from_call_log">From call log</string>
+    <string name="from_contact">From contact</string>
+    <string name="noContactsHelpText">"You don't have any contacts to display."</string>
+    <string name="recentCalls_empty">Call log is empty.</string>
+    <string name="noBlackListText">"You don't have any black list to display."</string>
+    <string name="noWhiteListText">"You don't have any white list to display."</string>
+    <!-- String used to display calls from unknown numbers in the call log -->
+    <string name="unknown">Unknown</string>
+    <!-- String used to display calls from private numbers in the call log -->
+    <string name="private_num">Private number</string>
+    <!-- String used to display calls from pay phone in the call log -->
+    <string name="payphone">Pay phone</string>
+    <string name="call_log_empty_gecode">-</string>
+    <string name="search">Search</string>
+    <string name="contacts_num">contacts</string>
+    <string name="contacts">contacts</string>
+    <string name="call_log">call log</string>
+    <string name="sync_list">Sync list</string>
+    <string name="delete_all_list">This will delete all of your list,are you sure?</string>
+    <string name="synchronization">Synchronization</string>
+    <string name="added_black_list">Added black list</string>
+    <string name="added_white_list">Added white list</string>
+    <string name="general">GENERAL</string>
+
+</resources>

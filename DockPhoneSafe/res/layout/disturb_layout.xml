@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <com.auratech.dockphonesafe.view.SettingsItemView
+            android:id="@+id/id_blacklistitem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <com.auratech.dockphonesafe.view.SettingsItemView
+            android:id="@+id/id_ringitem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <com.auratech.dockphonesafe.view.SettingsItemView
+            android:id="@+id/id_disturbitem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#e3e3e3" />
+
+        <com.auratech.dockphonesafe.view.SettingsItemView
+            android:id="@+id/id_disturbitemstart"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#e3e3e3" />
+
+        <com.auratech.dockphonesafe.view.SettingsItemView
+            android:id="@+id/id_disturbitemend"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#e3e3e3" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone" >
+
+            <LinearLayout
+                android:id="@+id/id_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:id="@+id/id_headerindex"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="10dp"
+                    android:text="SCHEDULE"
+                    android:textColor="@color/theme_color"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/theme_color" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="From:" />
+
+                <EditText
+                    android:id="@+id/id_fromtime"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:editable="false"
+                    android:inputType="none" >
+                </EditText>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="To:" />
+
+                <EditText
+                    android:id="@+id/id_totime"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:editable="false" >
+                </EditText>
+
+                <Button
+                    android:id="@+id/id_add"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="添加" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/id_show"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <com.auratech.dockphonesafe.view.AlarmTimeView
+                android:id="@+id/id_alarmview"
+                android:layout_width="match_parent"
+                android:layout_height="50dp" />
+
+            <ListView
+                android:id="@+id/id_listview"
+                android:layout_width="match_parent"
+                android:layout_height="400dp" >
+            </ListView>
+        </LinearLayout>
+    </LinearLayout>
+
+</ScrollView>

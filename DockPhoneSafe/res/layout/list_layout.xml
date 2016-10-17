@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:fab="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <ListView
+        android:id="@+id/id_listview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:divider="@null"
+        android:listSelector="@android:color/transparent"
+        android:paddingLeft="10dp"
+        android:paddingRight="36dp"
+        android:scrollbars="none" >
+    </ListView>
+
+    <TextView
+        android:id="@+id/id_empty"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="@string/noBlackListText"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="?android:attr/textColorSecondary" />
+
+    <com.auratech.dockphonesafe.view.SideBar
+        android:id="@+id/id_sidebar"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <com.auratech.dockphonesafe.view.FloatingActionsMenu
+        android:id="@+id/menufab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right|bottom"
+        android:layout_marginBottom="16dp"
+        android:layout_marginRight="36dp"
+        fab:fab_addButtonSize="normal" >
+
+        <com.auratech.dockphonesafe.view.FloatingActionButton
+            android:id="@+id/addfab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            fab:fab_colorNormal="#FFB533E5"
+            fab:fab_colorPressed="#88B533E5"
+            fab:fab_icon="@drawable/list_add"
+            fab:fab_size="normal" />
+
+        <com.auratech.dockphonesafe.view.FloatingActionButton
+            android:id="@+id/delfab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            fab:fab_colorNormal="#FF34FC21"
+            fab:fab_colorPressed="#8834FC21"
+            fab:fab_icon="@drawable/list_delete"
+            fab:fab_size="normal" />
+
+        <com.auratech.dockphonesafe.view.FloatingActionButton
+            android:id="@+id/syncfab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            fab:fab_colorNormal="#FFff0000"
+            fab:fab_colorPressed="#88ff0000"
+            fab:fab_icon="@drawable/list_sync"
+            fab:fab_size="normal" />
+    </com.auratech.dockphonesafe.view.FloatingActionsMenu>
+
+</FrameLayout>
