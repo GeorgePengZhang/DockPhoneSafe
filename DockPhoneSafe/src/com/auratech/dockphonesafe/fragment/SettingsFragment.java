@@ -18,36 +18,29 @@
 package com.auratech.dockphonesafe.fragment;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
 
 import mirko.android.datetimepicker.time.RadialPickerLayout;
 import mirko.android.datetimepicker.time.TimePickerDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.text.TextUtils;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.TextView;
 
 import com.auratech.dockphonesafe.R;
-import com.auratech.dockphonesafe.adapter.DisturbAdapter;
 import com.auratech.dockphonesafe.bean.TimeBean;
 import com.auratech.dockphonesafe.service.Dock;
+import com.auratech.dockphonesafe.service.DockService;
 import com.auratech.dockphonesafe.utils.AlarmUtils;
 import com.auratech.dockphonesafe.utils.DbUtils;
 import com.auratech.dockphonesafe.utils.TimeUtils;
 import com.auratech.dockphonesafe.utils.Utils;
-import com.auratech.dockphonesafe.utils.Utils.IChildViewOnClick;
-import com.auratech.dockphonesafe.view.AlarmTimeView;
 import com.auratech.dockphonesafe.view.SettingsItemView;
 import com.auratech.dockphonesafe.view.SettingsItemView.OnItemClickListener;
 import com.litesuits.orm.LiteOrm;
@@ -58,23 +51,15 @@ import com.litesuits.orm.LiteOrm;
  * @author: steven zhang
  * @date: Oct 9, 2016 11:12:50 AM
  */
-public class SettingsFragment extends Fragment implements OnClickListener, OnTouchListener, IChildViewOnClick  {
+public class SettingsFragment extends Fragment {
 	
 	private static final TimeUtils START_TIME = new TimeUtils(21, 30, TimeUtils.ALARM_TYPE_START);
 	private static final TimeUtils END_TIME = new TimeUtils(9, 00, TimeUtils.ALARM_TYPE_END);
-	private static final boolean TIME_OPENED = false;
+	public static final boolean TIME_OPENED = false;
+	public static final boolean BLACKLIST_OPENED = true;
+	public static final boolean RING_OPENED = true;
 	
-	private EditText mFromTimeET;
-	private EditText mToTimeET;
-	private TimeUtils mFromTime;
-	private TimeUtils mToTime;
-	private ListView mListView;
-	private Button mAddBtn;
-	private ArrayList<TimeBean> mListTime;
-	private DisturbAdapter mAdapter;
 	private LiteOrm liteOrm;
-	private AlarmTimeView mAlarmView;
-	private View mView;
 	private TimePickerDialog dialog;
 	private SettingsItemView blackItemsView;
 	private SettingsItemView ringItemsView;
@@ -86,20 +71,31 @@ public class SettingsFragment extends Fragment implements OnClickListener, OnTou
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		mView = inflater.inflate(R.layout.disturb_layout, container, false);
+		View view = inflater.inflate(R.layout.disturb_layout, container, false);
 		
-		initView(mView);
+		initView(view);
 		initParam();
-		return mView;
+		
+		IntentFilter filter = new IntentFilter(DockService.ACTION_DOCKCHANGED);
+		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mBroadcastReceiver, filter);
+		return view;
 	}
+	
+	@Override
+	public void onDestroyView() {
+		super.onDestroyView();
+		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mBroadcastReceiver);
+	}
+	
+	BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			setGeneralItemEnabled(Dock.isExistUSBNode());
+		}
+	};
 
 	public void initView(View view) {
-		mListView = (ListView) view.findViewById(R.id.id_listview);
-		mFromTimeET = (EditText) view.findViewById(R.id.id_fromtime);
-		mToTimeET = (EditText) view.findViewById(R.id.id_totime);
-		mAddBtn = (Button) view.findViewById(R.id.id_add);
-		mAlarmView = (AlarmTimeView) view.findViewById(R.id.id_alarmview);
-		
 		blackItemsView = (SettingsItemView) view.findViewById(R.id.id_blacklistitem);
 		blackItemsView.showHeader(true);
 		blackItemsView.setHeaderText(getResources().getString(R.string.general));
@@ -109,16 +105,8 @@ public class SettingsFragment extends Fragment implements OnClickListener, OnTou
 			
 			@Override
 			public void onItemClick(View v) {
-				boolean checked = !blackItemsView.isChecked();
-				if (checked) {
-					if (Dock.openblacklist()) { //设置开启黑名单屏蔽成功，才修改UI的变化
-						blackItemsView.setChecked(checked);
-					}
-				} else {
-					if (Dock.closeblacklist()) { //设置关闭黑名单屏蔽成功，才修改UI的变化
-						blackItemsView.setChecked(checked);
-					}
-				}
+				boolean checked = !blackItemsView.isItemChecked();
+				blacklistEnabled(checked);
 			}
 		});
 		
@@ -129,16 +117,8 @@ public class SettingsFragment extends Fragment implements OnClickListener, OnTou
 			
 			@Override
 			public void onItemClick(View v) {
-				boolean checked = !ringItemsView.isChecked();
-				if (checked) {
-					if (Dock.openRing()) { //设置开启底座响应成功，才修改UI的变化
-						ringItemsView.setChecked(checked);
-					}
-				} else {
-					if (Dock.closeRing()) { //设置关闭底座响应成功，才修改UI的变化
-						ringItemsView.setChecked(checked);
-					}
-				}
+				boolean checked = !ringItemsView.isItemChecked();
+				ringEnabled(checked);
 			}
 		});
 		
@@ -150,9 +130,8 @@ public class SettingsFragment extends Fragment implements OnClickListener, OnTou
 			
 			@Override
 			public void onItemClick(View v) {
-				boolean checked = !disturbItemsView.isChecked();
-				timeBean.setOpen(checked);
-				update(timeBean);
+				boolean checked = !disturbItemsView.isItemChecked();
+				disturbEnabled(checked);
 				setDisturbItemVisibility(checked);
 			}
 		});
@@ -178,23 +157,17 @@ public class SettingsFragment extends Fragment implements OnClickListener, OnTou
 			}
 		});
 		
-		mAddBtn.setOnClickListener(this);
-		mFromTimeET.setOnTouchListener(this);
-		mToTimeET.setOnTouchListener(this);
-		
 	}
 
 	public void initParam() {
 		liteOrm = DbUtils.getInstance(getActivity()).getDbInstance();
-		initListView();
-		
 		
 		ArrayList<TimeBean> list = liteOrm.query(TimeBean.class);
 		if (list.size() == 0) {
 			TimeUtils timeDifference = Utils.getTimeDifference(START_TIME, END_TIME);
 			int intervalsCount = Utils.getIntervalsCount(timeDifference);
-			timeBean = new TimeBean(START_TIME, END_TIME, timeDifference, intervalsCount, TIME_OPENED);
-			add(timeBean);
+			timeBean = new TimeBean(START_TIME, END_TIME, timeDifference, intervalsCount, TIME_OPENED, BLACKLIST_OPENED, RING_OPENED);
+			disturbAdd();
 		} else {
 			timeBean = list.get(0);
 		}
@@ -208,46 +181,8 @@ public class SettingsFragment extends Fragment implements OnClickListener, OnTou
 		super.onResume();
 		setGeneralItemEnabled(Dock.isExistUSBNode());
 		setDisturbItemVisibility(timeBean.isOpen());
-	}
-	
-	@Override
-	public void onClick(View v) {
-		switch (v.getId()) {
-		case R.id.id_add:
-			TextView tv = (TextView) mView.findViewById(R.id.id_show);
-			if (mFromTime == null || mToTime == null) {
-				tv.setText("添加失败,请设置免打扰时间");
-				break;
-			}
-			
-			TimeUtils timeDifference = Utils.getTimeDifference(mFromTime, mToTime);
-			int intervalsCount = Utils.getIntervalsCount(timeDifference);
-			TimeBean bean = new TimeBean(mFromTime, mToTime, timeDifference, intervalsCount, true);
-			tv.setText(bean.toString());
-			
-			boolean isUsed = false;
-
-			for (TimeBean time : mListTime) {
-				isUsed = Utils.isInTimeDifference(bean.getFromTime(), bean.getToTime(), time.getFromTime(), time.getToTime());
-				if (isUsed) {
-					mAlarmView.setErrorSelectedTimeBean(bean);
-					tv.setText("添加失败,时间间隔不能重叠,如有需要，请删除可能重叠的时间间隔重新添加。");
-					break;
-				}
-			}
-			
-			if (!isUsed) {
-				add(bean);
-			}
-			break;
-		case R.id.id_blacklistitem:
-			boolean enabled = ((SettingsItemView) v).isChecked();
-			((SettingsItemView) v).setChecked(!enabled);
-			break;
-
-		default:
-			break;
-		}
+		blackItemsView.setItemChecked(timeBean.isBlacklistEnabled());
+		ringItemsView.setItemChecked(timeBean.isRingEnabled());
 	}
 	
 	/**
@@ -264,7 +199,7 @@ public class SettingsFragment extends Fragment implements OnClickListener, OnTou
 	 * @param checked
 	 */
 	private void setDisturbItemVisibility(boolean checked) {
-		disturbItemsView.setChecked(checked);
+		disturbItemsView.setItemChecked(checked);
 		if (checked) {
 			disturbItemStart.setVisibility(View.VISIBLE);
 			disturbItemEnd.setVisibility(View.VISIBLE);
@@ -274,50 +209,6 @@ public class SettingsFragment extends Fragment implements OnClickListener, OnTou
 		}
 	}
 
-	/**
-	 * 弹出时间选择框，设置免打扰的时间间隔
-	 * @param editText
-	 */
-	public void setDisturbTime(final EditText editText) {
-		Calendar instance = Calendar.getInstance();
-		instance.setTimeInMillis(System.currentTimeMillis());
-		int hourOfDay = instance.get(Calendar.HOUR_OF_DAY);
-		int minute = instance.get(Calendar.MINUTE);
-		
-		String sTime = editText.getText().toString();
-		if (!TextUtils.isEmpty(sTime)) {
-			TimeUtils timeUtils = new TimeUtils();
-			timeUtils.parse(sTime);
-			hourOfDay = timeUtils.getHour();
-			minute = timeUtils.getMinute();
-		}
-		
-		
-		dialog = TimePickerDialog.newInstance(new TimePickerDialog.OnTimeSetListener() {
-			
-			@Override
-			public void onTimeSet(RadialPickerLayout view, int hourOfDay, int minute) {
-				TimeUtils time = new TimeUtils(hourOfDay, minute, TimeUtils.ALARM_TYPE_START);
-				switch (editText.getId()) {
-				case R.id.id_fromtime:
-					time.setType(TimeUtils.ALARM_TYPE_START);
-					mFromTime = time;
-					break;
-				case R.id.id_totime:
-					time.setType(TimeUtils.ALARM_TYPE_END);
-					mToTime = time;
-					break;
-
-				default:
-					break;
-				}
-				editText.setText(time.toString());
-			}
-		}, hourOfDay, minute, true);
-		dialog.show(getChildFragmentManager(), "dialog");
-	}
-	
-	
 	/**
 	 * 弹出时间选择框，设置免打扰的时间间隔
 	 * @param editText
@@ -340,20 +231,14 @@ public class SettingsFragment extends Fragment implements OnClickListener, OnTou
 				TimeUtils time = new TimeUtils(hourOfDay, minute, TimeUtils.ALARM_TYPE_START);
 				switch (itemView.getId()) {
 				case R.id.id_disturbitemstart:
-					time.setType(TimeUtils.ALARM_TYPE_START);
-					AlarmUtils.cancelAlarmInstance(getActivity(), timeBean);
-					timeBean.setFromTime(time);
-					add(timeBean);
+					disturbUpdate(time, TimeUtils.ALARM_TYPE_START);
 					break;
 				case R.id.id_disturbitemend:
-					time.setType(TimeUtils.ALARM_TYPE_END);
-					AlarmUtils.cancelAlarmInstance(getActivity(), timeBean);
-					timeBean.setToTime(time);
-					add(timeBean);
+					disturbUpdate(time, TimeUtils.ALARM_TYPE_END);
 					break;
 
 				default:
-					break;
+					return ;
 				}
 				itemView.setItemContent(time.toString());
 			}
@@ -369,86 +254,92 @@ public class SettingsFragment extends Fragment implements OnClickListener, OnTou
             dialog.show(getChildFragmentManager(), "dialog");
         }
 	}
-
-	@Override
-	public boolean onTouch(View v, MotionEvent event) {
-		int action = event.getAction();
-		if (action == MotionEvent.ACTION_UP) {
-			switch (v.getId()) {
-			case R.id.id_fromtime:
-				setDisturbTime(mFromTimeET);
-				break;
-			case R.id.id_totime:
-				setDisturbTime(mToTimeET);
-				break;
-
-			default:
-				break;
-			}
-		}
-		return false;
-	}
-
-	@Override
-	public void onChildViewClick(View v) {
-		Integer position = (Integer) v.getTag();
-		int iPosition = position.intValue();
-		TimeBean bean = mListTime.get(iPosition);
-		
-		switch (v.getId()) {
-		case R.id.id_del:
-			remove(bean);
-			break;
-		case R.id.id_switch:
-			bean.setOpen(!bean.isOpen());
-			update(bean);
-			break;
-
-		default:
-			break;
-		}
-		
-		mAlarmView.setSelectedTimeBean(mListTime);
-	}
-	
-	private void initListView() {
-		mListTime = liteOrm.query(TimeBean.class);
-		Collections.sort(mListTime);
-		mAlarmView.setSelectedTimeBean(mListTime);
-//		AlarmUtils.setupAlarmCollection(DisturbActivity.this, mListTime);
-		mAdapter = new DisturbAdapter(getActivity(), mListTime, this);
-		mListView.setAdapter(mAdapter);
-	}
 	
 	
+	//--------------------------------------------上面为UI交互部分-----------------------------------------------------
 	
-	private void add(TimeBean bean) {
-		mListTime.add(bean);
-		Collections.sort(mListTime);
-		liteOrm.save(bean);
+	//TODO --------------------------------------------华丽丽的分割线--------------------------------------------------
 		
-		mAlarmView.setSelectedTimeBean(mListTime);
-		mAdapter.notifyDataSetChanged();
-		
-		
-		AlarmUtils.setupAlarmInstance(getActivity(), bean);
-	}
+	//--------------------------------------------下面面为逻辑处理部分---------------------------------------------------
 	
-	private void remove(TimeBean bean) {
-		liteOrm.delete(bean);
-		mListTime.remove(bean);
-		mAdapter.notifyDataSetChanged();
+	/**
+	 * 更新定时免打扰时间区间
+	 * @param time 修改的时间
+	 * @param type 修改的是开始还是结束时间
+	 */
+	private void disturbUpdate(TimeUtils time, int type) {
+		AlarmUtils.cancelAlarmInstance(getActivity(), timeBean);
 		
-		AlarmUtils.cancelAlarmInstance(getActivity(), bean);
-	}
-	
-	private void update(TimeBean bean) {
-		liteOrm.update(bean);
-		mAdapter.notifyDataSetChanged();
-		if (bean.isOpen()) {
-			AlarmUtils.setupAlarmInstance(getActivity(), bean);
+		time.setType(type);
+		if (type == TimeUtils.ALARM_TYPE_START) {
+			timeBean.setFromTime(time);
 		} else {
-			AlarmUtils.cancelAlarmInstance(getActivity(), bean);
+			timeBean.setToTime(time);
+		}
+		
+		liteOrm.save(timeBean);
+		AlarmUtils.setupAlarmInstance(getActivity(), timeBean);
+	}
+	
+	/**
+	 * 增加一个定时免打扰
+	 */
+	private void disturbAdd() {
+		liteOrm.save(timeBean);
+		AlarmUtils.setupAlarmInstance(getActivity(), timeBean);
+	}
+	
+	/**
+	 * 是否开启定时免打扰功能
+	 * @param enabled
+	 */
+	private void disturbEnabled(boolean enabled) {
+		timeBean.setOpen(enabled);
+		liteOrm.update(timeBean);
+		if (enabled) {
+			AlarmUtils.setupAlarmInstance(getActivity(), timeBean);
+		} else {
+			AlarmUtils.cancelAlarmInstance(getActivity(), timeBean);
+		}
+	}
+	
+	/**
+	 * 是否开启黑名单屏蔽功能
+	 * @param enabled
+	 */
+	private void blacklistEnabled(boolean enabled) {
+		boolean flag = false;
+		
+		if (enabled) {
+			flag = Dock.openblacklist(); //设置开启黑名单屏蔽成功，才修改UI的变化
+		} else {
+			flag = Dock.closeblacklist(); //设置关闭黑名单屏蔽成功，才修改UI的变化
+		}
+		
+		if (flag) {
+			blackItemsView.setItemChecked(enabled);
+			timeBean.setBlacklistEnabled(enabled);
+			liteOrm.update(timeBean);
+		}
+	}
+	
+	/**
+	 * 是否开启响铃功能
+	 * @param enabled
+	 */
+	private void ringEnabled(boolean enabled) {
+		boolean flag = false;
+		
+		if (enabled) {
+			flag = Dock.openRing(); //设置开启底座响应成功，才修改UI的变化
+		} else {
+			flag = Dock.closeRing(); //设置关闭底座响应成功，才修改UI的变化
+		}
+		
+		if (flag) {
+			ringItemsView.setItemChecked(enabled);
+			timeBean.setRingEnabled(enabled);
+			liteOrm.update(timeBean);
 		}
 	}
 }

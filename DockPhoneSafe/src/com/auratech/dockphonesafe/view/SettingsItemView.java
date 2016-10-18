@@ -121,7 +121,7 @@ public class SettingsItemView extends LinearLayout implements OnClickListener {
 	 * 设置view是否选中
 	 * @param checked
 	 */
-	public void setChecked(boolean checked) {
+	public void setItemChecked(boolean checked) {
 		itemSwitch.setChecked(checked);
 	}
 	
@@ -129,7 +129,7 @@ public class SettingsItemView extends LinearLayout implements OnClickListener {
 	 * 判断item是否选中
 	 * @return
 	 */
-	public boolean isChecked() {
+	public boolean isItemChecked() {
 		return itemSwitch.isChecked();
 	}
 

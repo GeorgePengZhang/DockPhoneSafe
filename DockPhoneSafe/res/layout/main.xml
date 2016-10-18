@@ -8,10 +8,10 @@
     <com.auratech.dockphonesafe.view.PagerSlidingTabStrip
         android:id="@+id/tabs"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="80dp"
         android:background="#03bcd4"
         android:textColor="@android:color/white"
-        android:textSize="16sp"
+        android:textSize="20sp"
         app:pstsIndicatorColor="#fafa8e"
         app:pstsShouldExpand="true"
         app:pstsTabPaddingLeftRight="14dip"

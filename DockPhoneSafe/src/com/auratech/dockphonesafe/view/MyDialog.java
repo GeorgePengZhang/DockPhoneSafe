@@ -24,6 +24,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.widget.Button;
 import android.widget.TextView;
@@ -50,6 +51,8 @@ public class MyDialog extends Dialog implements android.view.View.OnClickListene
 
 	public MyDialog(Context context) {
 		super(context, R.style.MyDialog);
+		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE | WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+		
 		setContentView(R.layout.custom_dialog_layout);
 
 		getDisplay(context);

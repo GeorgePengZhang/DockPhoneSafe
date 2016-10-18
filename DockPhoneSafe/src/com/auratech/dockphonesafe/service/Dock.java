@@ -4,17 +4,30 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 
-import com.auratech.dockphonesafe.utils.Utils;
-
 import android.text.TextUtils;
 import android.util.Log;
+
+import com.auratech.dockphonesafe.utils.Utils;
 
 public class Dock {
 	//usb��ͨ�Žڵ�
 	public static final String PATH = "/sys/class/dock/usbdock/dock_file/dock_intf";
 	public static final String RESULT_LIST_FLAG = "L";
-	public static final String RESULT_BLACK_LIST_FLAG = "0";
-	public static final String RESULT_WHITE_LIST_FLAG = "1";
+	
+	public static final String RESULT_RING_ON 			= "0";
+	public static final String RESULT_RING_OFF 			= "1";
+	public static final String RESULT_SYNC_BLACK_LIST 	= "2";
+	public static final String RESULT_SYNC_WHITE_LIST 	= "3";
+	public static final String RESULT_BLACK_ON 			= "4";
+	public static final String RESULT_BLACK_OFF			= "5";
+	public static final String RESULT_DISTURB_EN		= "6";
+	public static final String RESULT_DISTURB_DIS		= "7";
+	public static final String RESULT_SEARCH			= "8";
+	public static final String RESULT_ADD_WHITE_LIST	= "9";
+	public static final String RESULT_ADD_BLACK_LIST 	= "a";
+	public static final String RESULT_DEL_BLACK_LIST  	= "b";
+	public static final String RESULT_DEL_WHITE_LIST	= "c";
+	public static final String RESULT_ERROR				= "d";
 
 	static String[] CMD = new String[3];
 	
@@ -266,6 +279,7 @@ public class Dock {
 		return str.trim();
 	}
 	
+	//L001000
 	public static String[] getPhoneSyncResult(String info) {
 		if (TextUtils.isEmpty(info)) {
 			return null;
@@ -274,17 +288,35 @@ public class Dock {
 		int index = info.indexOf(RESULT_LIST_FLAG)+1;
 		if (index < info.length()) {
 			String type = info.substring(index, index+1);
-			String id = info.substring(index+1, info.length());
+			String status = info.substring(index+1, index+2);
+			String id = info.substring(index+2, info.length());
 			
-			return new String[] {type, id.trim()}; 
+			return new String[] {type, status, id.trim()}; 
 		}
 		
 		return null;
 	}
 	
+	public static void parseStatus(String status) {
+		if (TextUtils.isEmpty(status)) {
+			return ;
+		}
+		
+		char s = status.charAt(0);
+		int update_list = s & 0x01; //0为更新黑名单，1为更新白名单
+		int black_enabled = s & 0x02; //0为黑名单为关闭，1为为黑名单开启
+		int disturb_enabled = s & 0x04; //0为免打扰关闭,1为免打扰开启
+		int ring_enabled = s & 0x08; //0为底座响铃开启，1为底座响铃关闭
+		
+		Log.d("TAG", "parseStatus:"+update_list+",black_enabled:"+black_enabled+",disturb_enabled:"+disturb_enabled+",ring_enabled:"+ring_enabled);
+		
+	}
+	
 	public static int getCMDType() {
 		return cmd_type;
 	}
+	
+	
 	/**end steven--------------------------------------------------->*/
 
 	/**

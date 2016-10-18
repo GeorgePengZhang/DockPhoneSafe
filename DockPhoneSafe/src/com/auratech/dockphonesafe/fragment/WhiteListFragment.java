@@ -22,10 +22,14 @@ import java.util.Collections;
 import java.util.List;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -127,13 +131,28 @@ public class WhiteListFragment extends Fragment implements OnClickListener, OnDo
 		mListView.setOnItemClickListener(this);
 		
 		DockService.addOnDockInfoListener(this);
+		IntentFilter filter = new IntentFilter(DockService.ACTION_DOCKCHANGED);
+		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mBroadcastReceiver, filter);
 	}
 	
 	@Override
 	public void onDestroyView() {
 		super.onDestroyView();
 		DockService.removeOnDockInfoListener(this);
+		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mBroadcastReceiver);
 	}
+	
+	BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			if (Dock.isExistUSBNode()) {
+				mSyncFAB.setVisibility(View.VISIBLE);
+			} else {
+				mSyncFAB.setVisibility(View.GONE);
+			}
+		}
+	};
 	
 	/**
 	 * 判断fragment是否显示
@@ -279,7 +298,6 @@ public class WhiteListFragment extends Fragment implements OnClickListener, OnDo
 			
 			@Override
 			public void onCancel() {
-				
 			}
 		});
 		
@@ -532,10 +550,13 @@ public class WhiteListFragment extends Fragment implements OnClickListener, OnDo
 			return ;
 		}
 		
-		Utils.writeLogToSdcard("dock.txt", "step4"+operatorBean+",operatorType:"+operatorType+",syncResult[0]:"+syncResult[0]+",syncResult[1]:"+syncResult[1]);
+		String type = syncResult[0];
+		String status = syncResult[1];
+		String id = syncResult[2];
 		
-		if (syncResult[0].equals(Dock.RESULT_WHITE_LIST_FLAG)) {
-			String id = syncResult[1];
+		Utils.writeLogToSdcard("dock.txt", "step4"+operatorBean+",operatorType:"+operatorType+",type:"+type+",status:"+status+",id:"+id);
+		
+		if (type.equals(Dock.RESULT_ADD_WHITE_LIST) || type.equals(Dock.RESULT_DEL_WHITE_LIST)) {
 			if (operatorBean.getId() == Integer.valueOf(id)) {
 				if (operatorType == OPERATOR_ADD) {
 					getActivity().runOnUiThread(new Runnable() {

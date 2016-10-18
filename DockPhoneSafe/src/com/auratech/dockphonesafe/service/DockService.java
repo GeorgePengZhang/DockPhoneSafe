@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -15,6 +16,7 @@ import android.widget.Toast;
 import com.auratech.dockphonesafe.R;
 import com.auratech.dockphonesafe.bean.BlackListBean;
 import com.auratech.dockphonesafe.bean.WhiteListBean;
+import com.auratech.dockphonesafe.fragment.SettingsFragment;
 import com.auratech.dockphonesafe.utils.DbUtils;
 import com.auratech.dockphonesafe.utils.DockCmdUtils;
 import com.auratech.dockphonesafe.utils.Utils;
@@ -23,6 +25,7 @@ import com.litesuits.orm.db.assit.QueryBuilder;
 
 public class DockService extends Service {
 	
+	public static final String ACTION_DOCKCHANGED = "com.auratech.dockphone.changed";
 	private static final String SYNC_START_FLAG = "1000";
 	
 	private Handler mHandler;
@@ -83,6 +86,8 @@ public class DockService extends Service {
 			boolean existNode = Dock.isExistUSBNode();
 			if (existNode && existNode != existUSBNode) {
 				Toast.makeText(DockService.this, "平板放入底座", Toast.LENGTH_LONG).show();
+				Intent intent = new Intent(ACTION_DOCKCHANGED);
+				LocalBroadcastManager.getInstance(DockService.this).sendBroadcast(intent);
 				
 				if (isDisturb) {
 					DockCmdUtils.opendisturb();
@@ -90,9 +95,24 @@ public class DockService extends Service {
 					DockCmdUtils.closedisturb();
 				}
 				
+				if (isBlackList) {
+					DockCmdUtils.openblacklist();
+				} else {
+					DockCmdUtils.closedisturb();
+				}
+				
+				if (isRing) {
+					DockCmdUtils.openRing();
+				} else {
+					DockCmdUtils.closeRing();
+				}
+				
 				DockCmdUtils.syncAllList();
 			} else if (!existNode && existNode != existUSBNode){
 				Toast.makeText(DockService.this, "平板取出底座", Toast.LENGTH_LONG).show();
+				Intent intent = new Intent(ACTION_DOCKCHANGED);
+				LocalBroadcastManager.getInstance(DockService.this).sendBroadcast(intent);
+				
 				if (syncflag) {
 					Toast.makeText(DockService.this, "名单同步失败!", Toast.LENGTH_LONG).show();
 					hideWaitingDialog();
@@ -130,7 +150,9 @@ public class DockService extends Service {
 	private boolean syncflag;
 	private ArrayList<BlackListBean> blackList;
 	private static boolean isSyncAllList = false;
-	private static boolean isDisturb = false;
+	private static boolean isDisturb = SettingsFragment.TIME_OPENED;
+	private static boolean isBlackList = SettingsFragment.BLACKLIST_OPENED;
+	private static boolean isRing = SettingsFragment.RING_OPENED;
 	
 	public static interface OnDockInfoListener {
 		public void onUpdated(String result);
@@ -153,6 +175,23 @@ public class DockService extends Service {
 	}
 	
 	/**
+	 * 设置黑名单功能是否开启
+	 * @param enabled
+	 */
+	public static void setBlackList(boolean enabled) {
+		isBlackList = enabled;
+	}
+	
+	/**
+	 * 设置底座响铃是否开启
+	 * @param enabled
+	 */
+	public static void setRing(boolean enabled) {
+		isRing = enabled;
+	}
+	
+	
+	/**
 	 * 同步名单
 	 * @param info
 	 */
@@ -163,24 +202,23 @@ public class DockService extends Service {
 		}
 		
 		String type = syncResult[0];
-		String id = syncResult[1];
+		String status = syncResult[1];
+		String id = syncResult[2];
 		
-		Log.d("TAG", "syncList:"+type+",id:"+id);
+		Dock.parseStatus(status);
+		Utils.writeLogToSdcard("dock.txt", "syncList:"+type+",id:"+id+",status:"+status);
 		
-		if (Dock.RESULT_BLACK_LIST_FLAG.equals(type)) {
-			syncBlackList(id);
-		} else if (Dock.RESULT_WHITE_LIST_FLAG.equals(type)) {
-			syncWhiteList(id);
-		}
+		syncBlackList(type, id);
+		syncWhiteList(type, id);
 	}
 	
 	/** 同步白名单
 	 * @param id 
 	 */
-	private void syncWhiteList(String id) {
+	private void syncWhiteList(String type, String id) {
 		Log.d("TAG", "syncWhiteList:"+id+",size:"+size+",position:"+position+",phoneId:"+phoneId);
 		
-		if (SYNC_START_FLAG.equals(id)) {
+		if (Dock.RESULT_SYNC_WHITE_LIST.equals(type) && SYNC_START_FLAG.equals(id)) {
 			QueryBuilder<WhiteListBean> qb = new QueryBuilder<WhiteListBean>(WhiteListBean.class)
 					.whereNoEquals(WhiteListBean.ENABLE, "false")
 					.orderBy("_id");
@@ -197,7 +235,7 @@ public class DockService extends Service {
 				DockCmdUtils.addWhiteList(bean.getId(), bean.getPhone());
 				syncflag = true;
 			}
-		} else if (syncflag) {
+		} else if (syncflag && Dock.RESULT_ADD_WHITE_LIST.equals(type)) {
 			if (phoneId.equals(id)) {
 				if (++position < size) {
 					WhiteListBean bean = whiteList.get(position);
@@ -223,8 +261,8 @@ public class DockService extends Service {
 	/** 同步黑名单
 	 * @param id
 	 */
-	private void syncBlackList(String id) {
-		if (SYNC_START_FLAG.equals(id)) {
+	private void syncBlackList(String type, String id) {
+		if (Dock.RESULT_SYNC_BLACK_LIST.equals(type) && SYNC_START_FLAG.equals(id)) {
 			QueryBuilder<BlackListBean> qb = new QueryBuilder<BlackListBean>(BlackListBean.class)
 					.whereNoEquals(BlackListBean.ENABLE, "false")
 					.orderBy("_id");
@@ -237,7 +275,7 @@ public class DockService extends Service {
 				DockCmdUtils.addBlackList(bean.getId(), bean.getPhone());
 				syncflag = true;
 			}
-		} else if (syncflag) {
+		} else if (syncflag && Dock.RESULT_ADD_BLACK_LIST.equals(type)) {
 			if (phoneId.equals(id)) {
 				if (++position < size) {
 					BlackListBean bean = blackList.get(position);

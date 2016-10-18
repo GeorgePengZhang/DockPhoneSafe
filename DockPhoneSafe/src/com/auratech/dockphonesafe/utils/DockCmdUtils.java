@@ -69,9 +69,10 @@ public class DockCmdUtils {
 	}
 	
 	/**
-	 * 同步黑白名单
+	 * 同步所有名单
 	 */
 	public static void syncAllList() {
+		Utils.writeLogToSdcard("syncAllList"+new Time(System.currentTimeMillis()));
 		DockService.setSyncAllList(true);
 		Dock.syncwhitelist();
 	}
@@ -80,6 +81,7 @@ public class DockCmdUtils {
 	 * 同步白名单
 	 */
 	public static void syncWhiteList() {
+		Utils.writeLogToSdcard("syncWhiteList"+new Time(System.currentTimeMillis()));
 		DockService.setSyncAllList(false);
 		Dock.syncwhitelist();
 	}
@@ -88,6 +90,7 @@ public class DockCmdUtils {
 	 * 同步黑名单
 	 */
 	public static void syncBlackList() {
+		Utils.writeLogToSdcard("syncBlackList"+new Time(System.currentTimeMillis()));
 		DockService.setSyncAllList(false);
 		Dock.syncblacklist();
 	}
@@ -98,6 +101,63 @@ public class DockCmdUtils {
 	 * @return
 	 */
 	public static String getListID(int id) {
+		Utils.writeLogToSdcard("getListID"+new Time(System.currentTimeMillis()));
 		return String.format(Locale.getDefault(), "%04d", id);
+	}
+	
+	/**
+	 * 开启底座铃声
+	 * @return
+	 */
+	public static boolean openRing() {
+		Utils.writeLogToSdcard("openRing"+new Time(System.currentTimeMillis()));
+		if (Dock.openRing()) {
+			DockService.setRing(true);
+			return true;
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * 关闭底座铃声
+	 * @return
+	 */
+	public static boolean closeRing() {
+		Utils.writeLogToSdcard("closeRing"+new Time(System.currentTimeMillis()));
+		if (Dock.closeRing()) {
+			DockService.setRing(false);
+			return true;
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * 开启黑名单屏蔽功能
+	 * @return
+	 */
+	public static boolean openblacklist() {
+		Utils.writeLogToSdcard("openblacklist"+new Time(System.currentTimeMillis()));
+		if (Dock.openblacklist()) {
+			DockService.setBlackList(true);
+			return true;
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * 关闭黑名单屏蔽功能
+	 * @return
+	 */
+	public static boolean closeblacklist() {
+		Utils.writeLogToSdcard("closeblacklist"+new Time(System.currentTimeMillis()));
+		if (Dock.closeblacklist()) {
+			DockService.setBlackList(false);
+			return true;
+		}
+		
+		return false;
 	}
 }

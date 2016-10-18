@@ -19,17 +19,21 @@ public class TimeBean implements Comparable<TimeBean>, Serializable {
 	private TimeUtils intervalsTime; //间隔时间
 	@Column("count")
 	private int intervalsCount; //间隔次数
-	private boolean isOpen; //是否启动
+	private boolean isOpen; //是否启动免打扰功能
+	private boolean blacklistEnabled; //是否启动黑名单屏蔽功能
+	private boolean ringEnabled; //是否启动底座响铃
 	
 	public TimeBean() {
 	}
 	
-	public TimeBean(TimeUtils fromTime, TimeUtils toTime,TimeUtils intervalsTime, int count, boolean isOpen) {
+	public TimeBean(TimeUtils fromTime, TimeUtils toTime,TimeUtils intervalsTime, int count, boolean isOpen, boolean blacklistEnabled, boolean ringEnabled) {
 		this.fromTime = fromTime;
 		this.toTime = toTime;
 		this.intervalsTime = intervalsTime;
 		this.intervalsCount = count;
 		this.isOpen = isOpen;
+		this.blacklistEnabled = blacklistEnabled;
+		this.ringEnabled = ringEnabled;
 	}
 
 	public int getId() {
@@ -80,6 +84,22 @@ public class TimeBean implements Comparable<TimeBean>, Serializable {
 		this.isOpen = isOpen;
 	}
 	
+	public boolean isBlacklistEnabled() {
+		return blacklistEnabled;
+	}
+
+	public void setBlacklistEnabled(boolean blacklistEnabled) {
+		this.blacklistEnabled = blacklistEnabled;
+	}
+
+	public boolean isRingEnabled() {
+		return ringEnabled;
+	}
+
+	public void setRingEnabled(boolean ringEnabled) {
+		this.ringEnabled = ringEnabled;
+	}
+
 	public String info() {
 		return fromTime+"-"+toTime;
 	}
